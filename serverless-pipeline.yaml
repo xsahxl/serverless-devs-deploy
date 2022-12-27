@@ -5,5 +5,39 @@ steps:
   - run: echo ${{secrets.ALIYUN_ACCOUNTID}}
   - run: echo ${{secrets.ALIYUN_AK}}
   - run: echo ${{secrets.ALIYUN_SK}}
-  - run: s config add --AccountID ${{secrets.ALIYUN_ACCOUNTID}}  --AccessKeyID ${{secrets.SIMPLE_ALIYUN_AK}}  --AccessKeySecret ${{secrets.SIMPLE_ALIYUN_SK}} -a default -f
+  - run: s config add --AccountID ${{secrets.ALIYUN_ACCOUNTID}}  --AccessKeyID ${{secrets.ALIYUN_AK}}  --AccessKeySecret ${{secrets.ALIYUN_SK}} -a default -f
   - run: s deploy --use-local -y
+  - name: 钉钉成功通知
+    plugin: "@serverless-cd/ding-talk"
+    if: ${{ success() }}
+    inputs:
+      webhook: https://oapi.dingtalk.com/robot/send?access_token=${{secrets.DING_TALK_TOKEN}}
+      msgtype: markdown
+      secret: ${{secrets.DING_TALK_SECRET}}
+      payload:
+        title: "Serverless CD"
+        text: |+
+          ### [流水线](${{ task.url }})(Serverless CD)-运行成功
+          **任务**: [#${{task.id}}](${{ task.url }})
+          **触发事件**: ${{ git.event_name }}
+          **分支**: ${{ git.branch }}     
+          **提交人**: ${{ git.pusher.name }}
+          **commit id**: ${{ git.commit }}
+          **commit message**: ${{ git.message }}
+  - name: 钉钉失败通知
+    plugin: "@serverless-cd/ding-talk"
+    if: ${{ failure() }}
+    inputs:
+      webhook: https://oapi.dingtalk.com/robot/send?access_token=${{secrets.DING_TALK_TOKEN}}
+      msgtype: markdown
+      secret: ${{secrets.DING_TALK_SECRET}}
+      payload:
+        title: "Serverless CD"
+        text: |+
+          ### [流水线](${{ task.url }})(Serverless CD)-运行失败
+          **任务**: [#${{task.id}}](${{ task.url }})
+          **触发事件**: ${{ git.event_name }}
+          **分支**: ${{ git.branch }}   
+          **提交人**: ${{ git.pusher.name }}
+          **commit id**: ${{ git.commit }}
+          **commit message**: ${{ git.message }}
