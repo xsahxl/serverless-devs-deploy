@@ -6,7 +6,7 @@ steps:
   - run: echo ${{secrets.ALIYUN_AK}}
   - run: echo ${{secrets.ALIYUN_SK}}
   - run: s config add --AccountID ${{secrets.ALIYUN_ACCOUNTID}}  --AccessKeyID ${{secrets.ALIYUN_AK}}  --AccessKeySecret ${{secrets.ALIYUN_SK}} -a default -f
-  # - run: s deploy --use-local -y
+  - run: s deploy --use-local -y
   # - name: 钉钉成功通知
   #   plugin: "@serverless-cd/ding-talk"
   #   if: ${{ success() }}
