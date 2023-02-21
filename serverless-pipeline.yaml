@@ -1,13 +1,13 @@
 name: "Deploy Express application to FC"
 steps:
-  - run: node index.js
-  # - run: npm i @serverless-devs/s -g --registry=https://registry.npmmirror.com
-  # - run: s -v
-  # - run: echo ${{secrets.ALIYUN_ACCOUNTID}}
-  # - run: echo ${{secrets.ALIYUN_AK}}
-  # - run: echo ${{secrets.ALIYUN_SK}}
-  # - run: s config add --AccountID ${{secrets.ALIYUN_ACCOUNTID}}  --AccessKeyID ${{secrets.ALIYUN_AK}}  --AccessKeySecret ${{secrets.ALIYUN_SK}} -a default -f
-  # - run: s deploy --use-local -y
+  # - run: node index.js
+  - run: npm i @serverless-devs/s -g --registry=https://registry.npmmirror.com
+  - run: s -v
+  - run: echo ${{secrets.ALIYUN_ACCOUNTID}}
+  - run: echo ${{secrets.ALIYUN_AK}}
+  - run: echo ${{secrets.ALIYUN_SK}}
+  - run: s config add --AccountID ${{secrets.ALIYUN_ACCOUNTID}}  --AccessKeyID ${{secrets.ALIYUN_AK}}  --AccessKeySecret ${{secrets.ALIYUN_SK}} -a default -f
+  - run: s deploy --use-local -y
   # - name: 钉钉成功通知
   #   plugin: "@serverless-cd/ding-talk"
   #   if: ${{ success() }}

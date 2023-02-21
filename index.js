@@ -5,6 +5,6 @@ const sleep = (time) =>
 
 (async () => {
   console.log("Start");
-  await sleep(1000 * 60 * 5);
+  await sleep(1000 * 60 * 2);
   console.log("End");
 })();
