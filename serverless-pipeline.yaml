@@ -1,19 +1,40 @@
 name: "Deploy Express application to FC"
+
 steps:
-  - run: npm i @serverless-devs/s -g --registry=https://registry.npmmirror.com
+  - name: 缓存devs工具组件
+    plugin: "@serverless-cd/cache"
+    id: sCacheComponents
+    inputs:
+      key: s-components/v1
+      path: /root/.s/components
+  - name: 缓存 npm 依赖包
+    plugin: "@serverless-cd/cache"
+    id: codeCache
+    inputs:
+      key: ${{hashFile('./code/package.json')}}
+      path: ./code/node_modules
+  - name: 安装devs工具
+    run: npm i @serverless-devs/s -g --registry=https://registry.npmmirror.com
   - run: s -v
-  - run: echo ${{secrets.ALIYUN_ACCOUNTID}}
-  - run: echo ${{secrets.ALIYUN_AK}}
-  - run: echo ${{secrets.ALIYUN_SK}}
-  - run: s config add --AccountID ${{secrets.ALIYUN_ACCOUNTID}}  --AccessKeyID ${{secrets.ALIYUN_AK}}  --AccessKeySecret ${{secrets.ALIYUN_SK}} -a default -f
-  - run: s deploy --use-local -y
+  - name: 安装代码包依赖
+    run: npm install --production
+    working-directory: ./code
+    if: ${{steps.codeCache.outputs['cache-hit'] != true}} # codeCache 对应使用插件的 ID
+  - name: 部署函数
+    run: s deploy --use-local -y -a default_serverless_devs_access
+    env:
+      # 关联云账号使用方式：推荐。因为这种使用方式不需要在插件 @serverless-cd/cache 里面声明 credentials 字段了
+      default_serverless_devs_access: '{"AccountID":"${{cloudSecrets.AccountID}}","AccessKeyID":"${{cloudSecrets.AccessKeyID}}","AccessKeySecret":"${{cloudSecrets.AccessKeySecret}}"}'
+      # 通过 secrets 配置
+      # default_serverless_devs_access: '{"AccountID":"${{secrets.AccountID}}","AccessKeyID":"${{secrets.AccessKeyID}}","AccessKeySecret":"${{secrets.AccessKeySecret}}"}'
   - name: 钉钉成功通知
     plugin: "@serverless-cd/ding-talk"
     if: ${{ success() }}
+    continue-on-error: true # 失败不阻塞程序运行
     inputs:
       webhook: https://oapi.dingtalk.com/robot/send?access_token=${{secrets.DING_TALK_TOKEN}}
       msgtype: markdown
-      secret: ${{secrets.DING_TALK_SECRET}}
+      # secret: ${{secrets.DING_TALK_SECRET}} #  如果加签才需要配置
       payload:
         title: "Serverless CD"
         text: |+
@@ -28,10 +49,11 @@ steps:
   - name: 钉钉失败通知
     plugin: "@serverless-cd/ding-talk"
     if: ${{ failure() }}
+    continue-on-error: true
     inputs:
       webhook: https://oapi.dingtalk.com/robot/send?access_token=${{secrets.DING_TALK_TOKEN}}
       msgtype: markdown
-      secret: ${{secrets.DING_TALK_SECRET}}
+      # secret: ${{secrets.DING_TALK_SECRET}}
       payload:
         title: "Serverless CD"
         text: |+
