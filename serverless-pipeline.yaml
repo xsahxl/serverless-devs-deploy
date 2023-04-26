@@ -30,7 +30,6 @@ steps:
   - name: 钉钉成功通知
     plugin: "@serverless-cd/ding-talk"
     if: ${{ success() }}
-    continue-on-error: true # 失败不阻塞程序运行
     inputs:
       webhook: https://oapi.dingtalk.com/robot/send?access_token=${{secrets.DING_TALK_TOKEN}}
       msgtype: markdown
@@ -49,7 +48,6 @@ steps:
   - name: 钉钉失败通知
     plugin: "@serverless-cd/ding-talk"
     if: ${{ failure() }}
-    continue-on-error: true
     inputs:
       webhook: https://oapi.dingtalk.com/robot/send?access_token=${{secrets.DING_TALK_TOKEN}}
       msgtype: markdown
